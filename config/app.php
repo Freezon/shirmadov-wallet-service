@@ -15,6 +15,11 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    /**
+     * Currency Key
+     */
+    'currency_key' => env('CURRENCY_SERVICE_KEY', 'key'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

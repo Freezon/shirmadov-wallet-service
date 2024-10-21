@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+// Есть пакет archtechx/enums, в нем есть треит Values
 enum TransactionType: string
 {
     case CREDIT = 'credit';//зачисление

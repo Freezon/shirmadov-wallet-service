@@ -32,6 +32,7 @@ class BalanceRequest extends FormRequest
                 Rule::requiredIf(fn() => $this->input('type') === TransactionType::TRANSFER->value),
                 Rule::when(
                     fn() => $this->input('type') === TransactionType::TRANSFER->value,
+					# для чего доблирование и разделение на 3 правила, вместо одного Rule::exsists('users')
                     ['exists:users,id', Rule::notIn([auth()->id()]), 'exists:users,id']
                 ),
             ],

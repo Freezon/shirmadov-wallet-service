@@ -15,6 +15,7 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    // Для сервисов предусмотрен конфиг services
     /**
      * Currency Key
      */

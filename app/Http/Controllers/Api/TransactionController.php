@@ -24,19 +24,31 @@ class TransactionController extends Controller
         $amount = $request->validated('amount');
         $targetUserId = $request->validated('target_user_id');
 
+		// Т.к. происходит несколько действий, которые должны происхоить только вместе,
+		// нужно использовать \DB::transaction(...)
+
         switch ($type) {
             case TransactionType::CREDIT->value:
+				// Не безопасно! Нужно $request->safe()->except('target_user_id')
                 $user->transactions()->create($request->except('target_user_id'));
+				// Не безопасно из-за неатамарности! Нужно: $user->update(['balance' => \DB::raw("`users`.`balance` + $amount")]);
                 $user->update(['balance' => ($user->balance + $amount)]);
                 break;
             case TransactionType::DEBIT->value:
+				// Не безопасно! Нужно $request->safe()->except('target_user_id')
                 $user->transactions()->create($request->except('target_user_id'));
+				// Не безопасно из-за неатамарности! Нужно: $user->update(['balance' => \DB::raw("`users`.`balance` - $amount")]);
                 $user->update(['balance' => ($user->balance - $amount)]);
                 break;
             case TransactionType::TRANSFER->value:
+                // Записей в таблицу транзакций должно быть 2
+                // первая - списание с пользователя 1
+                // вторая - зачисление на пользователя 2
                 $user->transactions()->create($request->validated());
+				// Не безопасно из-за неатамарности! Нужно: $user->update(['balance' => \DB::raw("`users`.`balance` - $amount")]);
                 $user->update([
                     'balance' => ($user->balance - $amount),
+					# в пользователе нет такого поля, при определенных настройках это приведет к 500
                     'target_user_id' => $targetUserId
                 ]);
                 User::where('id', $targetUserId)
@@ -66,7 +78,9 @@ class TransactionController extends Controller
      */
     public function showBalance(Request $request, CurrencyService $currencyService)
     {
+        // Нет валидации запроса!
         $balance = auth()->user()->balance;
+        // Для чего запрашивается перевод, если он может и не понадобиться?
         $curencyData = $currencyService->convert('RUB');
         $curency = $request->input('currency');
 
@@ -99,6 +113,12 @@ class TransactionController extends Controller
      */
     public function showTransactions()
     {
+        /***
+         * Правильнее будет так:
+         * $transactions = Transaction::whereUser(auth()->user());
+         *
+         * при этом в Transaction нужно добавить скоуп scopeWhereUser($query, User $id): void
+         */
         $transactions = auth()->user()->transactionByUserOrTarget()->get();
         return response()->json([
             'status' => true,

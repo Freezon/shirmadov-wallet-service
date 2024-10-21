@@ -54,6 +54,8 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class);
     }
 
+    // Данная функция не нужна
+    // scope функция должна быть в модели Transaction
     public function transactionByUserOrTarget()
     {
         return Transaction::with('user:id,name')->where(function ($query){

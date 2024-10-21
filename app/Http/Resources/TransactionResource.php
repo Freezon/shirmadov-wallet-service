@@ -17,6 +17,8 @@ class TransactionResource extends JsonResource
     public function toArray(Request $request): array
     {
         $user = auth()->user();
+
+        // Сообщения должны формироваться через trans() / trans_choice()
         $who = $user->id === $this->user->id ? 'Вы перевели пользователю' : 'Вам перевели пользователь';
 
         $comment = match ($this->type) {

@@ -9,10 +9,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
+// Вместо этого есть laravel/sanctum, но в данном случае не критично
 class AuthController extends Controller
 {
     public function register(UserRegisterRequest $request)
     {
+		// Плохо так делать, т.к. можно лишнего передать и будет 500
+		// Правильно: $data = $request->validated();
         $request['password'] = bcrypt($request['password']);
         $request['remember_token'] = Str::random(10);
         $user = User::create($request->toArray());
@@ -26,6 +29,7 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+		// Нет валидации запроса
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
             return response()->json([
